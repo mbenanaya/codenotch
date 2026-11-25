@@ -1,7 +1,17 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "bundle": {
-    "targets": ["deb", "appimage"]
+    "targets": ["deb"],
+    "shortDescription": "Usage notch for Claude, Codex, Cursor and other AI coding tools",
+    "longDescription": "Pins a notch to a screen edge showing each AI coding tool's usage-limit percentage and whether its sessions are busy, done or waiting.",
+    "category": "Utility",
+    "linux": {
+      "deb": {
+        "files": {
+          "/usr/bin/codenotch-hook": "../target/hook/release/codenotch-hook"
+        }
+      }
+    }
   },
   "plugins": {
     "updater": {

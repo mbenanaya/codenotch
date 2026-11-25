@@ -25,22 +25,33 @@ fn main() {
     let _ = send(port, &token, &event, ppid, &body);
 }
 
-/// Pulls auth token out of %APPDATA%\codenotch\auth_token (hand-rolled scan, no dependency)
+/// The main app's data folder: %APPDATA%\codenotch on Windows, the XDG config dir elsewhere
+/// (what `dirs::config_dir()` gives the main app, without the dependency).
+fn data_dir() -> Option<std::path::PathBuf> {
+    #[cfg(windows)]
+    let base = std::env::var_os("APPDATA").map(std::path::PathBuf::from);
+    #[cfg(not(windows))]
+    let base = std::env::var_os("XDG_CONFIG_HOME")
+        .filter(|v| !v.is_empty())
+        .map(std::path::PathBuf::from)
+        .or_else(|| std::env::var_os("HOME").map(|h| std::path::PathBuf::from(h).join(".config")));
+    base.map(|b| b.join("codenotch"))
+}
+
+/// Pulls auth token out of <data dir>/auth_token (hand-rolled scan, no dependency)
 fn read_token() -> String {
-    let path = match std::env::var("APPDATA") {
-        Ok(a) => format!("{a}\\codenotch\\auth_token"),
-        Err(_) => return String::new(),
+    let Some(path) = data_dir().map(|d| d.join("auth_token")) else {
+        return String::new();
     };
     std::fs::read_to_string(path)
         .map(|s| s.trim().to_string())
         .unwrap_or_default()
 }
 
-/// Pulls "port": N out of %APPDATA%\codenotch\config.json (hand-rolled scan, no dependency)
+/// Pulls "port": N out of <data dir>/config.json (hand-rolled scan, no dependency)
 fn read_port() -> u16 {
-    let path = match std::env::var("APPDATA") {
-        Ok(a) => format!("{a}\\codenotch\\config.json"),
-        Err(_) => return DEFAULT_PORT,
+    let Some(path) = data_dir().map(|d| d.join("config.json")) else {
+        return DEFAULT_PORT;
     };
     let Ok(txt) = std::fs::read_to_string(path) else {
         return DEFAULT_PORT;

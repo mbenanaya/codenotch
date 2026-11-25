@@ -335,6 +335,17 @@ cargo build --release -p codenotch
 ./scripts/run-linux.sh doctor   # self-diagnosis, same as on Windows
 ```
 
+Or install the Ubuntu package (22.04 or newer, amd64) from the fork's releases, which
+`.github/workflows/linux-deb.yml` builds on every push to the `linux` branch:
+
+```sh
+sudo apt install ./Codenotch_1.26.0.deb
+```
+
+The package installs `/usr/bin/codenotch`, `/usr/bin/codenotch-hook` (for Claude Code
+hooks) and a desktop entry. The binary selects X11 on its own, so it launches correctly
+from the app menu under Wayland too.
+
 `scripts/run-linux.sh` exists because of two things the desktop does not do by itself.
 **Wayland does not let a client place its own windows**, and the notch has to sit on a
 screen edge, so it runs as an X11 client under XWayland. And a shell started from a
